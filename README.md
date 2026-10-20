@@ -36,23 +36,24 @@ npm run build    # genera out/
 
 ## Despliegue en el VPS
 
-1. Compila con la URL pública, que se usa para la vista previa al compartir:
-   ```sh
-   SITE_URL=https://demo.tu-dominio.com npm run build
-   ```
-2. Sube la carpeta `out/`:
-   ```sh
-   rsync -avz --delete out/ usuario@tu-vps:/var/www/clinica-pacifico/
-   ```
-3. Solo la primera vez, en el VPS:
-   ```sh
-   sudo cp nginx.conf /etc/nginx/sites-available/clinica-pacifico
-   sudo ln -s /etc/nginx/sites-available/clinica-pacifico /etc/nginx/sites-enabled/
-   sudo nginx -t && sudo systemctl reload nginx
-   sudo certbot --nginx -d demo.tu-dominio.com
-   ```
+Demo publicada en https://clinica.169.58.110.225.sslip.io, con HTTPS de Let's Encrypt que se renueva solo. Es un sitio independiente en nginx, separado de los demás sitios del VPS. [sslip.io](https://sslip.io) es un DNS gratuito que apunta el subdominio a la IP; cuando haya un dominio propio, solo hay que cambiar `server_name` y `SITE_URL`.
 
-En Windows sin `rsync`, puedes usar `scp -r out/* usuario@tu-vps:/var/www/clinica-pacifico/`.
+Para publicar una actualización, desde Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\deploy\deploy.ps1
+```
+
+El script compila, sube `out/` empaquetado, reemplaza la versión anterior y ajusta los permisos (carpetas 755 y archivos 644, para que nginx pueda leerlos).
+
+Configuración inicial (ya hecha):
+
+```sh
+cp nginx.conf /etc/nginx/sites-available/clinica-pacifico
+ln -s /etc/nginx/sites-available/clinica-pacifico /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+certbot --nginx -d clinica.169.58.110.225.sslip.io --redirect
+```
 
 ## Privacidad
 
